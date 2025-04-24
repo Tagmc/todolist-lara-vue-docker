@@ -1,7 +1,9 @@
 <?php
 namespace App\Services;
 
+use App\Jobs\SendTodoCompletedMail;
 use App\Repositories\TodoRepository;
+use Illuminate\Support\Facades\Log;
 
 class TodoService {
     protected $todoRepository;
@@ -19,7 +21,13 @@ class TodoService {
     }
 
     public function updateTodo($todo, $data) {
-        return $this->todoRepository->update($todo, $data);
+    $originalStatus = $todo->status;
+    $updatedTodo = $this->todoRepository->update($todo, $data);
+    if ($originalStatus === 'doing' && isset($data['status']) && $data['status'] === 'done') {
+        dispatch(new SendTodoCompletedMail($updatedTodo));
+    }
+
+    return $updatedTodo;
     }
 
     public function deleteTodo($todo) {

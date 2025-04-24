@@ -20,6 +20,10 @@ class TodoFactory extends Factory
             'title' => $this->faker->sentence(),
             'completed' => $this->faker->boolean(),
             'priority' => $this->faker->numberBetween(1, 3),
+            'status' => $this->faker->randomElement(['doing', 'done']),
+            'deadline' => $this->faker->dateTimeBetween('now', '+10 minutes'),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

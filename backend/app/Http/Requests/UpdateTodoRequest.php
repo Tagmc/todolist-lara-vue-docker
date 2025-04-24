@@ -25,6 +25,8 @@ class UpdateTodoRequest extends FormRequest
             'title' => 'sometimes|required|string|max:255',
             'completed' => 'sometimes|required|boolean',
             'priority' => 'sometimes|required|integer|between:1,3',
+            'status' => 'sometimes|required|in:doing,done',
+            'deadline' => 'sometimes|nullable|date|after_or_equal:' . \Carbon\Carbon::now()->toDateString(),
         ];
     }
 
@@ -38,6 +40,10 @@ class UpdateTodoRequest extends FormRequest
             'priority.required' => 'Priority is required.',
             'priority.integer' => 'Priority must be an integer.',
             'priority.between' => 'Priority must be between 1 and 3.',
+            'status.required' => 'Status is required.',
+            'status.in' => 'Status must be either doing or done.',
+            'deadline.date' => 'Deadline must be a valid date.',
+            'deadline.after_or_equal' => 'Deadline must be in the future or now.',
         ];
     }
 }

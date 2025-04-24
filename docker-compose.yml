@@ -11,6 +11,7 @@ services:
       - 8000:8000
     depends_on:
       - mysql
+      - redis
     networks:
       - app-network
 
@@ -30,6 +31,56 @@ services:
     networks:
       - app-network
 
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    environment:
+      PMA_HOST: mysql_db
+      PMA_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    networks:
+      - app-network
+      
+  queue:
+    build:
+      context: ./backend
+    container_name: queue_worker
+    command: php artisan queue:work --tries=3 --timeout=60
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - app
+      - redis
+    networks:
+      - app-network
+
+  scheduler:
+    build:
+      context: ./backend
+    container_name: laravel_scheduler
+    command: sh -c "while [ true ]; do php artisan schedule:run --verbose --no-interaction & sleep 60; done"
+    volumes:
+      - ./backend:/var/www
+    depends_on:
+      - app
+    networks:
+      - app-network
+
+
+  redis: 
+    image: redis:alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    networks:
+      - app-network
+  
+  
+
   frontend:
     build:
       context: ./frontend
@@ -41,10 +92,6 @@ services:
       - 5173:5173
     networks:
       - app-network
-
-# Bỏ nginx nếu bạn đang dev mode
-# Nếu bạn vẫn muốn dùng nginx reverse proxy, cần config lại cho phù hợp với cổng dev
-# Hoặc dùng khi đã build frontend ra `dist`
 
 volumes:
   dbdata:

@@ -32,7 +32,7 @@ class TodoController extends Controller
 
     public function update(UpdateTodoRequest $request, Todo $todo)
     {
-        $updatedTodo = $this->todoService->updateTodo($todo, $request->only(['title', 'completed', 'priority']));
+        $updatedTodo = $this->todoService->updateTodo($todo, $request->only(['title', 'completed', 'priority', 'status', 'deadline']));
         return response()->json($updatedTodo);
     }
 

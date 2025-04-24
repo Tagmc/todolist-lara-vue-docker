@@ -12,6 +12,7 @@ type TodoGetters = {
   activeTodosCount: (state: TodoState) => number;
   isLoading: (state: TodoState) => boolean;
   highPriorityTodos: (state: TodoState) => Todo[];
+  filteredTodos: (state: TodoState) => Todo[];
 };
 
 type TodoActionContext = {
@@ -28,6 +29,7 @@ const todoModule: Module<TodoState, RootState> = {
     todos: [],
     loading: false,
     filterPriority: null,
+    statusFilter: 'all',
   }),
 
   getters: {
@@ -38,6 +40,18 @@ const todoModule: Module<TodoState, RootState> = {
     isLoading: (state: TodoState) => state.loading,
     highPriorityTodos: (state: TodoState) =>
       state.todos.filter((t) => t.priority === 3),
+    filteredTodos: (state: TodoState) => {
+      return state.todos.filter((todo) => {
+        const matchesPriority = state.filterPriority
+          ? todo.priority === state.filterPriority
+          : true;
+        const matchesStatus =
+          state.statusFilter === 'all'
+            ? true
+            : todo.status === state.statusFilter;
+        return matchesPriority && matchesStatus;
+      });
+    },
   },
 
   mutations: {
@@ -61,6 +75,9 @@ const todoModule: Module<TodoState, RootState> = {
     SET_PRIORITY_FILTER(state: TodoState, priority: number | null) {
       state.filterPriority = priority;
     },
+    SET_STATUS_FILTER(state: TodoState, status: 'all' | 'doing' | 'done') {
+      state.statusFilter = status;
+    },
   },
 
   actions: {
@@ -82,10 +99,10 @@ const todoModule: Module<TodoState, RootState> = {
       commit("SET_LOADING", false);
     },
 
-    async toggleTodo({ commit }: TodoActionContext, todo: Todo) {
-      const updated = { ...todo, completed: !todo.completed };
-      const response = await updateTodo(updated);
-      commit("UPDATE_TODO", response.data);
+    async updateStatus({ commit }: TodoActionContext, todo: Todo) {
+      const updatedTodo = { ...todo, status: todo.status === 'doing' ? 'done' : 'doing' }; 
+      const response = await updateTodo(updatedTodo); 
+      commit("UPDATE_TODO", response.data); 
     },
 
     async deleteTodo({ commit }: TodoActionContext, todo: Todo) {
@@ -98,6 +115,13 @@ const todoModule: Module<TodoState, RootState> = {
       priority: number | null
     ) {
       commit("SET_PRIORITY_FILTER", priority);
+      dispatch("fetchTodos");
+    },
+    setStatusFilter(
+      { commit, dispatch }: TodoActionContext,
+      status: 'all' | 'doing' | 'done'
+    ) {
+      commit("SET_STATUS_FILTER", status);
       dispatch("fetchTodos");
     },
   },

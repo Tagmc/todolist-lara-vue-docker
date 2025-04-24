@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-xl mx-auto p-6 bg-white shadow rounded mt-10">
-    <h1 class="text-2xl font-bold mb-4">📋 Todo List ấdsadasd</h1>
+    <h1 class="text-2xl font-bold mb-4">📋 Todo List ấdsadas</h1>
     <div v-if="isLoading" class="text-center my-4">
       <div class="spinner"></div>
     </div>
@@ -34,7 +34,18 @@
         <option :value="3">High</option>
       </select>
     </div>
-
+    <div class="mb-4">
+      <label class="mr-2">Filter by Status:</label>
+      <select
+        v-model="statusFilter"
+        @change="filterByStatus"
+        class="border p-2 rounded"
+      >
+        <option value="all">All</option>
+        <option value="doing">Doing</option>
+        <option value="done">Done</option>
+      </select>
+    </div>
     <ul>
       <li
         v-for="todo in todos"
@@ -44,10 +55,10 @@
         <label class="flex items-center gap-2">
           <input
             type="checkbox"
-            :checked="todo.completed"
+            :checked="todo.status === 'done' ? true : false"
             @change="toggle(todo)"
           />
-          <span :class="{ 'line-through text-gray-400': todo.completed }">
+          <span :class="{ 'line-through text-gray-400': todo.status === 'done' ? true : false }">
             [{{ todo.priority }}] {{ todo.title }}
           </span>
         </label>
@@ -70,6 +81,7 @@ const store = useStore();
 const newTitle = ref("");
 const newPriority = ref(1);
 const priorityFilter = ref<number | null>(null);
+const statusFilter = ref("all");
 const isLoading = computed(() => store.getters["todo/isLoading"]);
 const todos = computed(() => store.state.todo.todos);
 const activeCount = computed(() => store.getters["todo/activeTodosCount"]);
@@ -85,10 +97,14 @@ const addTodo = () => {
     newPriority.value = 1;
   }
 };
-const toggle = (todo: Todo) => store.dispatch("todo/toggleTodo", todo);
+const toggle = (todo: Todo) => {
+  store.dispatch("todo/updateStatus", todo);
+};
 const remove = (todo: Todo) => store.dispatch("todo/deleteTodo", todo);
 const filterByPriority = () =>
   store.dispatch("todo/setPriorityFilter", priorityFilter.value);
-
+const filterByStatus = () => {
+  store.dispatch("todo/setStatusFilter", statusFilter.value);
+};
 onMounted(fetch);
 </script>
