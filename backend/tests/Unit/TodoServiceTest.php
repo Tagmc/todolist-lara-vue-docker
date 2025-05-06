@@ -21,11 +21,8 @@ class TodoServiceTest extends TestCase
         $mockRepo->shouldReceive('all')
             ->with(null)
             ->andReturn(collect(['todo1', 'todo2']));
-
         $service = new TodoService($mockRepo);
-
         $result = $service->getTodos();
-
         $this->assertEquals(['todo1', 'todo2'], $result->all());
     }
 
@@ -33,16 +30,12 @@ class TodoServiceTest extends TestCase
     {
         $mockRepo = Mockery::mock(TodoRepository::class);
         $data = ['title' => 'Test', 'priority' => 3];
-
         $mockRepo->shouldReceive('create')
             ->with($data)
             ->once()
             ->andReturn((object) $data);
-
         $service = new TodoService($mockRepo);
-
         $result = $service->createTodo($data);
-
         $this->assertEquals('Test', $result->title);
     }
 
@@ -66,11 +59,9 @@ class TodoServiceTest extends TestCase
     {
         $mockRepo = Mockery::mock(TodoRepository::class);
         $todo = new Todo();
-
         $mockRepo->shouldReceive('delete')
             ->with($todo)
             ->once();
-
         $service = new TodoService($mockRepo);
         $service->deleteTodo($todo);
         $this->assertTrue(true);
